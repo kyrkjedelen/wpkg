@@ -14,6 +14,7 @@ impl ErrorKind {
         }
     }
 }
+
 pub struct Error<T> {
     kind: ErrorKind,
     error: T,
