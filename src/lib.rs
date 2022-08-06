@@ -3,7 +3,7 @@ use std::{ io, env };
 use std::error::Error as StdError;
 //use std::path::Path;
 
-mod file; mod error; mod debmanip;
+mod configmanip; mod error; mod debmanip;
 
 
 const PROGRAM_NAME: &str = "wpkg";
