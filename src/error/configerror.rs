@@ -2,15 +2,13 @@ use std::error;
 use std::fmt; use std::fmt::{ Formatter, Display, Debug };
 
 pub enum ErrorKind {
-    NotDeb,
-    NoName,
+    BadPackage,
 }
 impl ErrorKind {
     fn as_str(&self) -> &str {
         use ErrorKind::*;
         match *self {
-            NotDeb => "not a deb file",
-            NoName => "info page has no name",
+            BadPackage => "unvalid package",
         }
     }
 }

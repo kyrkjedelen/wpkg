@@ -3,7 +3,10 @@ use std::error::Error;
 
 use std::io::prelude::*;
 
-use super::CONFIG_PATH;
+use super::{
+    error,
+    CONFIG_PATH,
+};
 
 pub struct Package {
     name: String,
@@ -12,7 +15,7 @@ pub struct Package {
 }
 
 impl Package {
-    fn to_string(&self) -> String {
+    fn as_string(&self) -> String {
         format!("{} {} {}", self.name, self.url, self.is_active)
     }
     fn new(name: String, url: String, is_active: bool) -> Self {
@@ -20,17 +23,44 @@ impl Package {
     }
 }
 
-pub fn add_package_to_config_file(package: Package) -> Result<(), Box<dyn Error>> {
+pub fn add_package_to_config_file(new_package: Package) -> Result<(), Box<dyn Error>> {
+    use error::configerror::{Error, ErrorKind};
+
     let mut config_file = File::open(CONFIG_PATH)?;
     let mut contents = String::new();
     
     config_file.read_to_string(&mut contents)?;
 
+    let mut packages: Vec<Package> = Vec::new();
 
-    let result = String::new();
-    format!("{}\n{}", contents, package.to_string());
+    packages.push(new_package);
 
-    config_file.write_all(result.as_bytes())?;
+    let mut line_index = 0;
+    for line in contents.lines() {
+        line_index += 1;
+        match make_package_from_string(line) {
+            Some(package)  => {
+                packages.push(package)
+            }
+            None => {
+                let error_message = format!("package in line {line_index} in the config file is unvalid. Please remove it.");
+                return Err(
+                    Box::new(
+                        Error::new(ErrorKind::BadPackage, error_message)
+                    )
+                );
+            }
+        }
+    }
+    packages.sort_unstable_by(|a,b| {a.name.cmp(&b.name)});
+
+    let mut packages_string = String::new();
+    for package in packages {
+        packages_string.push_str(&package.as_string())
+    }
+
+    config_file.write_all(packages_string.as_bytes())?;
+
     Ok(())
 }
 
